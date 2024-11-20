@@ -1,0 +1,35 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+
+# npm package-lock file (jika diperlukan)
+package-lock.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Build files
+dist/
+build/
+
+# Coverage output
+coverage/
+
+# Test files
+*.test.js
+*.spec.js
+
+# Dependencies and builds
+*.tgz
