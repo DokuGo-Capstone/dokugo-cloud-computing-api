@@ -1,8 +1,10 @@
-const Joi = require("joi");
 const {
   register,
   login,
+  logout,
+  updateProfilePhoto,
   viewProfile,
+  editProfile,
 } = require("../controllers/usersController");
 
 const userRoutes = (server) => {
@@ -12,16 +14,7 @@ const userRoutes = (server) => {
       path: "/register",
       handler: register,
       options: {
-        auth: false, // Registrasi tidak memerlukan autentikasi
-        validate: {
-          payload: Joi.object({
-            firstname: Joi.string().required(),
-            lastname: Joi.string().required(),
-            username: Joi.string().required(),
-            email: Joi.string().email().required(),
-            password: Joi.string().required(),
-          }),
-        },
+        auth: false,
       },
     },
     {
@@ -29,13 +22,7 @@ const userRoutes = (server) => {
       path: "/login",
       handler: login,
       options: {
-        auth: false, 
-        validate: {
-          payload: Joi.object({
-            email: Joi.string().email().required(),
-            password: Joi.string().required(),
-          }),
-        },
+        auth: false,
       },
     },
     {
@@ -43,7 +30,37 @@ const userRoutes = (server) => {
       path: "/profile",
       handler: viewProfile,
       options: {
-        auth:'jwt'
+        auth: "jwt",
+      },
+    },
+    {
+      method: "PUT", // Menambahkan rute untuk edit profil
+      path: "/profile/edit",
+      handler: editProfile,
+      options: {
+        auth: "jwt",
+      },
+    },
+    {
+      method: "POST",
+      path: "/profile/photo",
+      handler: updateProfilePhoto,
+      options: {
+        auth: "jwt",
+        payload: {
+          maxBytes: 2 * 1024 * 1024,
+          output: "data",
+          parse: true,
+        },
+      },
+    },
+    {
+      method: "POST", // Menambahkan route logout
+      path: "/logout",
+      handler: logout,
+      options: {
+        auth: "jwt",
+        // pre: [{ method: checkTokenBlacklist }],
       },
     },
   ]);
