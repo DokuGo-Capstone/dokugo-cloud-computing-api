@@ -2,7 +2,6 @@
 API ini dirancang untuk mengelola pengguna, termasuk fungsi registrasi, login, logout, melihat dan mengedit profil, memperbarui foto profil, serta menghapus akun. API ini menggunakan Hapi.js sebagai framework dan Sequelize sebagai ORM untuk mengakses database.
 
 ## Fitur Utama
-- 
 - Integrasi dengan API
 - Fitur CRUD
 
