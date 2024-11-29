@@ -5,12 +5,12 @@ const TokenBlacklist = require("../models/tokenBlacklistModel");
 const jwt = require("@hapi/jwt");
 const jwtdecode = require("jsonwebtoken");
 const { nanoid } = require("nanoid");
+const { Op } = require("sequelize");
 
-// Skema Validasi JOI
+// Skema Validasi JOI untuk registrasi
 const registerSchema = Joi.object({
-  firstname: Joi.string().min(2).max(30).required(),
-  lastname: Joi.string().min(2).max(30).required(),
   username: Joi.string().alphanum().min(3).max(30).required(),
+  phone_number: Joi.string().min(10).max(15).required(), // Validasi nomor telepon
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
 }).messages({
@@ -30,7 +30,7 @@ const register = async (request, h) => {
       return h.response({ error: error.details[0].message }).code(400);
     }
 
-    const { firstname, lastname, username, email, password } = value;
+    const { username, phone_number, email, password } = value;
 
     const existingUser =
       (await User.findOne({ where: { email } })) ||
@@ -43,17 +43,16 @@ const register = async (request, h) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = nanoid();
-    const defaultProfilePhotoUrl =
-      "https://storage.googleapis.com/dokugo-storage/default.png";
+    const defaultAvatarUrl =
+      "https://storage.googleapis.com/dokugo-storage/default-avatar.png"; // URL avatar default
 
     const newUser = await User.create({
       id: userId,
-      firstname,
-      lastname,
       username,
+      phone_number, // Menambahkan phone_number
       email,
       password: hashedPassword,
-      photo: defaultProfilePhotoUrl,
+      avatar: defaultAvatarUrl, // Menambahkan avatar
     });
 
     return h
@@ -61,11 +60,10 @@ const register = async (request, h) => {
         message: "User berhasil didaftarkan",
         data: {
           id: newUser.id,
-          firstname: newUser.firstname,
-          lastname: newUser.lastname,
           username: newUser.username,
+          phone_number: newUser.phone_number,
           email: newUser.email,
-          photo: newUser.photo,
+          avatar: newUser.avatar,
         },
       })
       .code(201);
@@ -149,10 +147,10 @@ const logout = async (request, h) => {
   }
 };
 
-
+// Fungsi: Update Profile Photo (Avatar)
 const updateProfilePhoto = async (request, h) => {
   try {
-    console.log("Received payload:", request.payload); // Menambahkan log untuk mengecek payload
+    console.log("Received payload:", request.payload);
 
     const userId = request.auth.credentials.user.id;
     const user = await User.findByPk(userId);
@@ -161,40 +159,34 @@ const updateProfilePhoto = async (request, h) => {
       return h.response({ error: "User tidak ditemukan" }).code(404);
     }
 
-    // Memeriksa apakah payload berisi avatarUrl
     const { avatarUrl } = request.payload;
-    console.log("Avatar URL received:", avatarUrl); // Menambahkan log untuk memeriksa avatarUrl
+    console.log("Avatar URL received:", avatarUrl);
 
     if (!avatarUrl) {
       return h.response({ error: "Avatar URL tidak ditemukan" }).code(400);
     }
 
-    // Daftar avatar yang disediakan
     const availableAvatars = [
       "https://storage.googleapis.com/dokugo-storage/avatar1.png",
       "https://storage.googleapis.com/dokugo-storage/avatar2.png",
       "https://storage.googleapis.com/dokugo-storage/avatar3.png",
     ];
 
-    // Memeriksa apakah avatarUrl ada dalam daftar avatar yang tersedia
     if (!availableAvatars.includes(avatarUrl)) {
       return h.response({ error: "Avatar yang dipilih tidak valid" }).code(400);
     }
 
-    // Memperbarui foto pengguna
-    user.photo = avatarUrl;
+    user.avatar = avatarUrl;
     await user.save();
 
     return h
-      .response({ message: "Avatar berhasil diperbarui", photoUrl: avatarUrl })
+      .response({ message: "Avatar berhasil diperbarui", avatarUrl: avatarUrl })
       .code(200);
   } catch (error) {
     console.error(error);
     return h.response({ error: "Internal Server Error" }).code(500);
   }
 };
-
-
 
 // Fungsi: Lihat Profil
 const viewProfile = async (request, h) => {
@@ -210,11 +202,10 @@ const viewProfile = async (request, h) => {
       .response({
         user: {
           id: user.id,
-          // firstname: user.firstname,
-          // lastname: user.lastname,
           username: user.username,
           email: user.email,
-          photoUrl: user.photo,
+          avatarUrl: user.avatar,
+          phone_number: user.phone_number, // Menambahkan nomor telepon
         },
       })
       .code(200);
@@ -224,12 +215,11 @@ const viewProfile = async (request, h) => {
   }
 };
 
-// Skema Validasi JOI untuk Edit Profil
+// Fungsi: Edit Profil
 const editProfileSchema = Joi.object({
-  firstname: Joi.string().min(2).max(30).optional(),
-  lastname: Joi.string().min(2).max(30).optional(),
   username: Joi.string().alphanum().min(3).max(30).optional(),
   email: Joi.string().email().optional(),
+  phone_number: Joi.string().min(10).max(15).optional(), // Validasi nomor telepon
 }).messages({
   "string.max":
     "{{#label}} panjangnya harus kurang dari atau sama dengan {{#limit}} karakter",
@@ -253,9 +243,8 @@ const editProfile = async (request, h) => {
       return h.response({ error: "User tidak ditemukan" }).code(404);
     }
 
-    const { firstname, lastname, username, email } = value;
+    const { username, email, phone_number } = value;
 
-    // Cek apakah email atau username sudah digunakan oleh user lain
     if (email) {
       const existingEmail = await User.findOne({
         where: { email, id: { [Op.ne]: userId } },
@@ -274,25 +263,41 @@ const editProfile = async (request, h) => {
       }
     }
 
-    // Perbarui data profil pengguna
-    if (firstname) user.firstname = firstname;
-    if (lastname) user.lastname = lastname;
-    if (username) user.username = username;
+    if (phone_number) user.phone_number = phone_number;
     if (email) user.email = email;
+    if (username) user.username = username;
 
     await user.save();
 
-    return h.response({
-      message: "Profil berhasil diperbarui",
-      user: {
-        id: user.id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        username: user.username,
-        email: user.email,
-        photoUrl: user.photo,
-      },
-    }).code(200);
+    return h
+      .response({
+        message: "Profil berhasil diperbarui",
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          phone_number: user.phone_number,
+        },
+      })
+      .code(200);
+  } catch (error) {
+    console.error(error);
+    return h.response({ error: "Internal Server Error" }).code(500);
+  }
+};
+// Fungsi: Delete User Account
+const deleteAccount = async (request, h) => {
+  try {
+    const userId = request.auth.credentials.user.id;
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return h.response({ error: "User tidak ditemukan" }).code(404);
+    }
+
+    await user.destroy(); // Menghapus pengguna dari database
+
+    return h.response({ message: "Akun berhasil dihapus" }).code(200);
   } catch (error) {
     console.error(error);
     return h.response({ error: "Internal Server Error" }).code(500);
@@ -306,4 +311,5 @@ module.exports = {
   updateProfilePhoto,
   viewProfile,
   editProfile,
+  deleteAccount,
 };

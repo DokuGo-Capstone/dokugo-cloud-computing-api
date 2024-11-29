@@ -5,6 +5,7 @@ const {
   updateProfilePhoto,
   viewProfile,
   editProfile,
+  deleteAccount,
 } = require("../controllers/usersController");
 
 const userRoutes = (server) => {
@@ -42,7 +43,15 @@ const userRoutes = (server) => {
       },
     },
     {
-      method: "POST",
+      method: "DELETE", // Rute untuk delete account
+      path: "/profile/delete",
+      handler: deleteAccount,
+      options: {
+        auth: "jwt",
+      },
+    },
+    {
+      method: "PATCH",
       path: "/profile/photo",
       handler: updateProfilePhoto,
       options: {

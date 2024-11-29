@@ -1,0 +1,275 @@
+{
+  "info": {
+    "name": "User API Documentation",
+    "_postman_id": "abc12345-def6-7890-ghij-klmnopqrstuv",
+    "description": "API Documentation for User Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"newUser\",\n  \"phone_number\": \"08123456789\",\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/register",
+          "host": ["{{base_url}}"],
+          "path": ["register"]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {},
+          "status": "Created",
+          "code": 201,
+          "body": "{\n  \"message\": \"User berhasil didaftarkan\",\n  \"data\": {\n    \"id\": \"userId123\",\n    \"username\": \"newUser\",\n    \"phone_number\": \"08123456789\",\n    \"email\": \"user@example.com\",\n    \"avatar\": \"https://storage.googleapis.com/dokugo-storage/default-avatar.png\"\n  }\n}"
+        },
+        {
+          "name": "Validation Error",
+          "originalRequest": {},
+          "status": "Bad Request",
+          "code": 400,
+          "body": "{\n  \"error\": \"Email atau username sudah terdaftar\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Login User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/login",
+          "host": ["{{base_url}}"],
+          "path": ["login"]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {},
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"message\": \"Login berhasil\",\n  \"token\": \"your.jwt.token\"\n}"
+        },
+        {
+          "name": "Invalid Credentials",
+          "originalRequest": {},
+          "status": "Unauthorized",
+          "code": 401,
+          "body": "{\n  \"error\": \"Email salah\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Logout User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/logout",
+          "host": ["{{base_url}}"],
+          "path": ["logout"]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {},
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"message\": \"Logout berhasil\"\n}"
+        },
+        {
+          "name": "No Token",
+          "originalRequest": {},
+          "status": "Unauthorized",
+          "code": 401,
+          "body": "{\n  \"error\": \"Token tidak ditemukan\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "View Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/profile",
+          "host": ["{{base_url}}"],
+          "path": ["profile"]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {},
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"user\": {\n    \"id\": \"userId123\",\n    \"username\": \"newUser\",\n    \"email\": \"user@example.com\",\n    \"avatarUrl\": \"https://storage.googleapis.com/dokugo-storage/default-avatar.png\",\n    \"phone_number\": \"08123456789\"\n  }\n}"
+        },
+        {
+          "name": "Not Found",
+          "originalRequest": {},
+          "status": "Not Found",
+          "code": 404,
+          "body": "{\n  \"error\": \"User tidak ditemukan\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Edit Profile",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"updatedUser\",\n  \"email\": \"updated@example.com\",\n  \"phone_number\": \"08129876543\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/profile/edit",
+          "host": ["{{base_url}}"],
+          "path": ["profile", "edit"]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {},
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"message\": \"Profil berhasil diperbarui\",\n  \"user\": {\n    \"id\": \"userId123\",\n    \"username\": \"updatedUser\",\n    \"email\": \"updated@example.com\",\n    \"phone_number\": \"08129876543\"\n  }\n}"
+        },
+        {
+          "name": "Email Taken",
+          "originalRequest": {},
+          "status": "Bad Request",
+          "code": 400,
+          "body": "{\n  \"error\": \"Email sudah digunakan\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Profile Photo",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"avatarUrl\": \"https://storage.googleapis.com/dokugo-storage/avatar1.png\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/profile/photo",
+          "host": ["{{base_url}}"],
+          "path": ["profile", "photo"]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {},
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"message\": \"Avatar berhasil diperbarui\",\n  \"avatarUrl\": \"https://storage.googleapis.com/dokugo-storage/avatar1.png\"\n}"
+        },
+        {
+          "name": "Invalid Avatar",
+          "originalRequest": {},
+          "status": "Bad Request",
+          "code": 400,
+          "body": "{\n  \"error\": \"Avatar yang dipilih tidak valid\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete Account",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/profile/delete",
+          "host": ["{{base_url}}"],
+          "path": ["profile", "delete"]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {},
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"message\": \"Akun berhasil dihapus\"\n}"
+        },
+        {
+          "name": "Not Found",
+          "originalRequest": {},
+          "status": "Not Found",
+          "code": 404,
+          "body": "{\n  \"error\": \"User tidak ditemukan\"\n}"
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "jwt_token",
+      "value": ""
+    }
+  ]
+}

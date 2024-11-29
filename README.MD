@@ -1,12 +1,21 @@
 # Aplikasi Monitoring Keuangan
-Deskripsi singkat tentang apa proyek ini.
+API ini dirancang untuk mengelola pengguna, termasuk fungsi registrasi, login, logout, melihat dan mengedit profil, memperbarui foto profil, serta menghapus akun. API ini menggunakan Hapi.js sebagai framework dan Sequelize sebagai ORM untuk mengakses database.
 
 ## Fitur Utama
-- Manajemen user
+- 
 - Integrasi dengan API
 - Fitur CRUD
 
-## Tangkapan Layar (Optional)
+##Teknologi yang Digunakan
+- Hapi.js: Framework untuk membangun aplikasi Node.js.
+- Sequelize: ORM untuk mengelola database.
+- JWT: Token autentikasi untuk otorisasi pengguna.
+- Joi: Validasi payload.
+- bcrypt: Enkripsi kata sandi.
+- nanoid: Pembuatan ID unik.
+- JSON Web Token Decode: Untuk membaca token JWT.
+
+## Endpoints
 ![Tangkapan Layar](link-ke-screenshot)
 
 ## Instalasi
