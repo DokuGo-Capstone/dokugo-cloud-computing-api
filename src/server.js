@@ -30,6 +30,7 @@ const init = async () => {
   // Registrasi rute
   userRoutes(server);
 
+  
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);
 };
