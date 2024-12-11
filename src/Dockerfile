@@ -1,4 +1,4 @@
-FROM node:20
+FROM node:20-slim
 
 # Copying this separately prevents re-running npm install on every code change.
 COPY package*.json ./
@@ -11,4 +11,4 @@ COPY . .
 ENV PORT 8080
 
 # Run the web service on container startup.
-CMD ["npm","run", "start-prod"]
+CMD ["npm","run", "start"]

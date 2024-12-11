@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start-dev": "nodemon server.js"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "Rama Aryo Prambudi",
@@ -13,7 +13,6 @@
     "@google-cloud/storage": "^7.14.0",
     "@hapi/hapi": "^21.3.12",
     "@hapi/jwt": "^3.2.0",
-    "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",
@@ -21,8 +20,6 @@
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.4",
     "nanoid": "^3.1.20",
-    "node-cache": "^5.1.2",
-    "nodemailer": "^6.9.16",
     "sequelize": "^6.37.5"
   }
 }

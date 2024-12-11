@@ -6,9 +6,6 @@ const {
   viewProfile,
   editProfile,
   deleteAccount,
-  forgotPassword,
-  verifyOtp,
-  resetPassword,
 } = require("../controllers/usersController");
 
 const userRoutes = (server) => {
@@ -38,7 +35,7 @@ const userRoutes = (server) => {
       },
     },
     {
-      method: "PUT",
+      method: "PUT", // Menambahkan rute untuk edit profil
       path: "/profile/edit",
       handler: editProfile,
       options: {
@@ -67,36 +64,12 @@ const userRoutes = (server) => {
       },
     },
     {
-      method: "POST", 
+      method: "POST", // Menambahkan route logout
       path: "/logout",
       handler: logout,
       options: {
         auth: "jwt",
         // pre: [{ method: checkTokenBlacklist }],
-      },
-    },
-    {
-      method: "POST",
-      path: "/forgotPassword",
-      handler: forgotPassword,
-      options: {
-        auth: false,
-      },
-    },
-    {
-      method: "POST",
-      path: "/verify-otp",
-      handler: verifyOtp,
-      options: {
-        auth: false,
-      },
-    },
-    {
-      method: "POST",
-      path: "/resetPassword",
-      handler: resetPassword,
-      options: {
-        auth: false,
       },
     },
   ]);

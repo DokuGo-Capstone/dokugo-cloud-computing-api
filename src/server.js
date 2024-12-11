@@ -4,8 +4,8 @@ require("dotenv").config();
 
 const init = async () => {
   const server = Hapi.server({
-    port: process.env.PORT || 3000,
-    host: "localhost",
+    port: process.env.PORT || 8080,
+    host: "0.0.0.0",
   });
 
   await server.register(require("@hapi/jwt"));
@@ -30,7 +30,6 @@ const init = async () => {
   // Registrasi rute
   userRoutes(server);
 
-  
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);
 };
