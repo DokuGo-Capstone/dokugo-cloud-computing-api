@@ -1,0 +1,449 @@
+openapi: 3.0.0
+info:
+  title: User Management API
+  description: API untuk registrasi, login, update profil, dan pengelolaan akun pengguna.
+  version: 1.0.0
+  contact:
+    name: Your Name
+    email: your.email@example.com
+servers:
+  - url: 'https://backend-api-dokugo-715591776189.asia-southeast2.run.app'
+    description: Production server
+
+
+paths:
+  /register:
+    post:
+      summary: Registrasi User
+      operationId: register
+      requestBody:
+        description: Data yang diperlukan untuk registrasi user baru.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Username user
+                phone_number:
+                  type: string
+                  description: Nomor telepon user
+                email:
+                  type: string
+                  description: Email user
+                password:
+                  type: string
+                  description: Password user
+      responses:
+        '201':
+          description: User berhasil didaftarkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      username:
+                        type: string
+                      phone_number:
+                        type: string
+                      email:
+                        type: string
+                      avatar:
+                        type: string
+        '400':
+          description: Email atau username sudah terdaftar
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal Server Error
+
+  /login:
+    post:
+      summary: Login User
+      operationId: login
+      requestBody:
+        description: Data yang diperlukan untuk login user.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email user
+                password:
+                  type: string
+                  description: Password user
+      responses:
+        '200':
+          description: Login berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  token:
+                    type: string
+        '401':
+          description: Email atau password salah
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal Server Error
+
+  /profile:
+    get:
+      summary: Lihat Profil User
+      operationId: viewProfile
+      security:
+        - jwt: []
+      responses:
+        '200':
+          description: Profil user ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      username:
+                        type: string
+                      email:
+                        type: string
+                      avatarUrl:
+                        type: string
+        '404':
+          description: User tidak ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal Server Error
+
+  /profile/edit:
+    put:
+      summary: Edit Profil User
+      operationId: editProfile
+      security:
+        - jwt: []
+      requestBody:
+        description: Data yang diperbarui untuk profil user.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                phone_number:
+                  type: string
+      responses:
+        '200':
+          description: Profil berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      username:
+                        type: string
+                      email:
+                        type: string
+                      phone_number:
+                        type: string
+        '400':
+          description: Email atau username sudah digunakan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: User tidak ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal Server Error
+
+  /profile/delete:
+    delete:
+      summary: Hapus Akun User
+      operationId: deleteAccount
+      security:
+        - jwt: []
+      responses:
+        '200':
+          description: Akun berhasil dihapus
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: User tidak ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal Server Error
+
+  /profile/photo:
+    patch:
+      summary: Update Foto Profil (Avatar)
+      operationId: updateProfilePhoto
+      security:
+        - jwt: []
+      requestBody:
+        description: Foto avatar user yang baru
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatarUrl:
+                  type: string
+                  description: URL avatar baru
+      responses:
+        '200':
+          description: Avatar berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  avatarUrl:
+                    type: string
+        '400':
+          description: Avatar tidak valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: User tidak ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal Server Error
+
+  /logout:
+    post:
+      summary: Logout User
+      operationId: logout
+      security:
+        - jwt: []
+      responses:
+        '200':
+          description: Logout berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Token tidak ditemukan atau tidak valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal Server Error
+
+  /forgotPassword:
+    post:
+      summary: Mengirimkan OTP untuk Reset Password
+      operationId: forgotPassword
+      requestBody:
+        description: Email yang digunakan untuk reset password
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: OTP telah dikirimkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Format email tidak valid atau tidak ada email yang terdaftar
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal Server Error
+
+  /verify-otp:
+    post:
+      summary: Verifikasi OTP untuk Reset Password
+      operationId: verifyOtp
+      requestBody:
+        description: Email dan OTP untuk verifikasi
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                otp:
+                  type: string
+      responses:
+        '200':
+          description: OTP valid dan token reset password berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resetToken:
+                    type: string
+        '400':
+          description: OTP salah atau kedaluwarsa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Email tidak terdaftar
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal Server Error
+
+  /resetPassword:
+    post:
+      summary: Reset Password User
+      operationId: resetPassword
+      requestBody:
+        description: Token reset password dan password baru
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resetToken:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        '200':
+          description: Password berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Input tidak valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '401':
+          description: Token tidak valid atau kedaluwarsa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal Server Error
+
+components:
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

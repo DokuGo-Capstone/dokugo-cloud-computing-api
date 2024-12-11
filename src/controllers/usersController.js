@@ -3,9 +3,12 @@ const bcrypt = require("bcrypt");
 const User = require("../models/userModels");
 const TokenBlacklist = require("../models/tokenBlacklistModel");
 const jwt = require("@hapi/jwt");
+const nodemailer = require("nodemailer");
 const jwtdecode = require("jsonwebtoken");
 const { nanoid } = require("nanoid");
 const { Op } = require("sequelize");
+const NodeCache = require("node-cache");
+const otpCache = new NodeCache({ stdTTL: 300 }); // Cache dengan TTL (Time to Live) 5 Menit
 
 // Skema Validasi JOI untuk registrasi
 const registerSchema = Joi.object({
@@ -205,7 +208,7 @@ const viewProfile = async (request, h) => {
           username: user.username,
           email: user.email,
           avatarUrl: user.avatar,
-          phone_number: user.phone_number, // Menambahkan nomor telepon
+          // phone_number: user.phone_number, // Menambahkan nomor telepon
         },
       })
       .code(200);
@@ -304,6 +307,138 @@ const deleteAccount = async (request, h) => {
   }
 };
 
+const forgotPassword = async (request, h) => {
+  try {
+    const { email } = request.payload;
+
+    if (!email || typeof email !== "string") {
+      return h.response({ error: "Email tidak valid" }).code(400);
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return h.response({ error: "Format email tidak valid" }).code(400);
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return h.response({ error: "Email tidak terdaftar" }).code(404);
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    otpCache.set(email.toLowerCase(), otp); // Simpan OTP untuk email dalam cache
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Kode OTP Reset Password",
+      html: `
+        <p>Halo ${user.username},</p>
+        <p>Berikut adalah kode OTP Anda:</p>
+        <p><strong>${otp}</strong></p>
+        <p>Kode ini akan kedaluwarsa dalam 1 jam.</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return h.response({ message: "Kode OTP telah dikirim" }).code(200);
+  } catch (error) {
+    console.error("Error in forgotPassword:", error);
+    return h.response({ error: "Internal Server Error" }).code(500);
+  }
+};
+
+const verifyOtp = async (request, h) => {
+  try {
+    const { email, otp } = request.payload;
+
+    if (!email || !otp || typeof otp !== "string") {
+      return h.response({ error: "Input tidak valid" }).code(400);
+    }
+
+    const storedOtp = otpCache.get(email.toLowerCase());
+    if (!storedOtp) {
+      return h
+        .response({ error: "Kode OTP tidak ditemukan atau sudah kedaluwarsa" })
+        .code(400);
+    }
+
+    if (storedOtp !== otp) {
+      return h.response({ error: "Kode OTP salah" }).code(400);
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return h.response({ error: "Email tidak terdaftar" }).code(404);
+    }
+
+    const resetToken = jwtdecode.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    otpCache.del(email.toLowerCase()); // Hapus OTP yang sudah digunakan
+
+    return h.response({ resetToken }).code(200);
+  } catch (error) {
+    console.error("Error in verifyOtp:", error);
+    return h.response({ error: "Internal Server Error" }).code(500);
+  }
+};
+
+const resetPassword = async (request, h) => {
+  try {
+    const { resetToken, newPassword } = request.payload;
+
+    // Validasi input
+    if (!resetToken || !newPassword) {
+      return h.response({ error: "Input tidak valid" }).code(400);
+    }
+
+    // Verifikasi token reset password
+    let decoded;
+    try {
+      decoded = jwtdecode.verify(resetToken, process.env.JWT_SECRET);
+    } catch (err) {
+      return h
+        .response({ error: "Token tidak valid atau telah kedaluwarsa" })
+        .code(401);
+    }
+
+    // Ambil userId dari token yang sudah terdecode
+    const userId = decoded.userId;
+
+    // Cari user berdasarkan userId
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return h.response({ error: "User tidak ditemukan" }).code(404);
+    }
+
+    // Hash password baru
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Perbarui password user di database
+    await User.update({ password: hashedPassword }, { where: { id: userId } });
+
+    return h.response({ message: "Password berhasil diubah" }).code(200);
+  } catch (error) {
+    console.error("Error in resetPassword:", error);
+    return h.response({ error: "Internal Server Error" }).code(500);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -312,4 +447,7 @@ module.exports = {
   viewProfile,
   editProfile,
   deleteAccount,
+  forgotPassword,
+  verifyOtp,
+  resetPassword,
 };

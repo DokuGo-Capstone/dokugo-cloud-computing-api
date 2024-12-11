@@ -1,0 +1,17 @@
+{
+  "name": "dokumentasi-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start-dev": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "yaml": "^2.6.1"
+  }
+}
